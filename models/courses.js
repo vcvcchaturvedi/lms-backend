@@ -16,40 +16,28 @@ const courseSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+      chapterTitle: {
+        type: String,
+        required: true,
+      },
+      exercises: [
+        {
+          title: {
+            type: String,
+            required: true,
+          },
+          problemURL: {
+            type: String,
+            required: true,
+          },
+          solutionURL: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
     },
   ],
-  firstname: {
-    type: String,
-    required: true,
-  },
-  lastname: {
-    type: String,
-    required: true,
-  },
-  isTutor: {
-    type: Boolean,
-    default: "false",
-    required: false,
-  },
-  coursesEnrolled: {
-    ids: [{ type: String, required: true }],
-    required: false,
-  },
-  emailid: {
-    type: String,
-    required: true,
-    unique: true,
-  },
 });
-userSchema.pre("save", async function (next) {
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(this.password, salt);
-    this.password = hashedPassword;
-    next();
-    console.log(this.username, this.password);
-  } catch (err) {
-    console.log(err);
-  }
-});
+
 export const Course = mongoose.model("course", courseSchema);
