@@ -8,8 +8,8 @@ import { User } from "./models/users.js";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
-import FileStore from "session-file-store";
-const routerApp = Express.Router();
+import bodyParser from "body-parser";
+import connectEnsureLogin from "connect-ensure-login";
 const url = process.env.MONGODB_URI || "mongodb://localhost/lmsApp";
 mongoose.connect(url, { useNewUrlParser: true });
 const con = mongoose.connection;
@@ -18,23 +18,35 @@ con.on("open", function () {
 });
 const app = Express();
 const port = process.env.PORT || 3200;
+const corsOptions = {
+  origin: true,
+  credentials: true,
+};
 app.use(cors());
-app.use(Express.json());
-app.use(Express.urlencoded({ extended: true }));
-
 app.use(cookieParser("secret123"));
+app.use(Express.json()); // 2
+app.use(
+  Express.urlencoded({
+    extended: true,
+  })
+);
+
 app.use(
   session({
     secret: "secret123",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 60 * 60 * 24 * 1000 },
+    cookie: {
+      httpOnly: false,
+      sameSite: true,
+      secure: false,
+      maxAge: 60 * 60 * 24 * 1000,
+    },
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/auth", routerAuth);
-app.use("/", routerApp);
 passport.use(
   new Strategy(function (username, password, done) {
     try {
@@ -70,7 +82,7 @@ passport.deserializeUser((user, done) => {
   console.log(
     "DESERIALIZINGGGGGGGGGGGGGGGGGGGGG>....................................."
   );
-  User.findOne(user.username, (err, user) => {
+  User.findOne(user, (err, user) => {
     if (err) {
       console.log("error: " + err);
       done(null, false, { error: err });
@@ -80,11 +92,22 @@ passport.deserializeUser((user, done) => {
     }
   });
 });
-
-routerApp
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", ["*"]);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type",
+    "Accept",
+    "x-requested-with"
+  );
+  res.header("Access-Control-Request-Headers", "Content-Type");
+  next();
+});
+app
   .route("/login")
   .post(async (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", { session: true }, (err, user, info) => {
       console.log("It is: " + err + " " + user + " " + JSON.stringify(info));
       if (err) res.err(err);
       else {
@@ -92,6 +115,10 @@ routerApp
           res.send(info);
         } else {
           console.log("Yes!");
+          // req.session ? console.log("...") : (req.session = {});
+          req.session.messages = "Login successfull";
+          req.session.authenticated = true;
+          req.authenticated = true;
           req.logIn(user, (err) => {
             if (err) {
               res.send("Error in logging in...");
@@ -105,19 +132,31 @@ routerApp
     })(req, res, next);
   })
   .get(async function (req, res) {
-    // res.send({ message: "Done" });
+    console.log("HIIIIIIIIIIII");
+    res.send({ message: "Done" });
   });
-routerApp.get(
+app.get(
   "/dashboard",
+  cors(corsOptions),
   // connectEnsureLogin.ensureLoggedIn(),
   async (req, res) => {
-    if (req.isAuthenticated()) console.log("yes");
-    else console.log("no");
-    // console.log(req);
+    console.log(req);
+    for (let session in req.sessionStore.sessions) {
+      let data = JSON.parse(req.sessionStore.sessions[session]);
+      console.log(data.authenticated);
+      if (data.authenticated) {
+        console.log(data.passport.user.coursesEnrolled.ids);
+      }
+    }
+    // if (req.isAuthenticated()) console.log("yes");
+    // else console.log("no");
+    // console.log(req.session.authenticated);
+    console.log(req.user);
     res.send({ sessionID: req.sessionID });
   }
 );
-routerApp.get("/", async (request, response) => {
+
+app.get("/", async (request, response) => {
   response.send("Hello world4");
 });
 
