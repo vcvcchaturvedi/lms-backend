@@ -1,15 +1,13 @@
 import Express, { request } from "express";
-// import Recipes from "../recipes.js";
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { User } from "../models/users.js";
 const routerAuth = Express.Router();
 routerAuth.use((request, response, next) => {
   console.log(request.url + "--------" + Date.now());
-  // console.log(request);
+
   next();
 });
-// const recipes = { Recipes };
+
 routerAuth.route("/register").post(async (request, response) => {
   console.log(JSON.stringify(request.body) + " ----- " + Date.now());
   let user = new User({
@@ -25,7 +23,6 @@ routerAuth.route("/register").post(async (request, response) => {
   } catch (err) {
     response.send(err);
   }
-  //response.json(user);
 });
 routerAuth.route("/verify").post(async (request, response) => {
   let [userid, upassword] = [request.body.uid, request.body.password];
@@ -36,7 +33,7 @@ routerAuth.route("/verify").post(async (request, response) => {
     if (result) response.send("Login successful!");
     else response.send("Login credentials incorrect!");
   } else {
-    response.send("Login ID incorrect"); //must be changed to 'Login credentials incorrect' while live
+    response.send("Login ID incorrect");
   }
 });
 export default routerAuth;

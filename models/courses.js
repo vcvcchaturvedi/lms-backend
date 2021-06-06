@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 const courseSchema = new mongoose.Schema({
-  imag: {
+  image: {
     type: String,
     required: false,
   },
@@ -9,6 +9,10 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  description: {
+    type: String,
+    required: true,
   },
   chapters: [
     {
@@ -20,22 +24,6 @@ const courseSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      exercises: [
-        {
-          title: {
-            type: String,
-            required: true,
-          },
-          problemURL: {
-            type: String,
-            required: true,
-          },
-          solutionURL: {
-            type: String,
-            required: true,
-          },
-        },
-      ],
     },
   ],
 });

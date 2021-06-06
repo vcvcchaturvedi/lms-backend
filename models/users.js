@@ -28,7 +28,12 @@ const userSchema = new mongoose.Schema({
     required: false,
   },
   coursesEnrolled: {
-    ids: [{ type: String, required: true }],
+    ids: [
+      {
+        course: { type: String, required: true },
+        startFromChapter: { type: Number, default: 0 },
+      },
+    ],
     required: false,
   },
   emailid: {
