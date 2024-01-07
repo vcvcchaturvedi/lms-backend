@@ -47,7 +47,7 @@ app.use(
   })
 );
 app.set("trust proxy", 1);
-
+app.options("*", cors(corsOptions));
 app.use("/auth", routerAuth);
 passport.use(
   new Strategy(function (username, password, done) {
