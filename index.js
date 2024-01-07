@@ -38,7 +38,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser("secret123"));
 app.use(Express.json());
 app.use(
