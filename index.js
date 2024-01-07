@@ -20,7 +20,7 @@ con.on("open", function () {
 const app = Express();
 const port = process.env.PORT || 3200;
 const corsOptions = {
-  origin: false,
+  origin: "https://learnonline.netlify.app",
   credentials: true,
 };
 app.use(
